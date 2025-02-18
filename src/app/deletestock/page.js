@@ -68,6 +68,12 @@ export default function DeleteStock() {
             document.getElementById('modalDelete').showModal();
             return
         }
+        //เช็คจำนวนสินค้าที่ต้องการเบิก ว่ามากกว่าจำนวนสินค้าที่มีหรือไม่ ถ้ามากกว่าให้แสดง dialog แจ้งเตือน จำนวนสินค้าไม่เพียงพอ กับจำนวนที่ต้องการเบิก
+        if (parseInt(total) > parseInt(data[0].product_total)) {
+            setTextAlert("จำนวนสินค้าไม่เพียงพอ กับจำนวนที่ต้องการเบิก");
+            document.getElementById('modalDelete').showModal();
+            return
+        }
         //เก็บข้อมูล stock ลงในฐานข้อมูล
         const { data: stock, error } = await supabase
             .from('stock')
