@@ -1,13 +1,11 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
+
 import supabase from '../supabase-client';
 
 export default function DeleteStock() {
     const [data, setData] = useState([]);
-
-    console.log(data);
-
     function delStock() {
         document.getElementById('my_modal_6').showModal();
     }
@@ -60,54 +58,6 @@ export default function DeleteStock() {
             console.log(users);
         }
     };
-
-    const addTodo = async () => {
-        const newTodoData = {
-            name: newTodo,
-            isCompleted: false,
-        };
-        const { data, error } = await supabase
-            .from("TodoList")
-            .insert([newTodoData])
-            .single();
-
-        if (error) {
-            console.log("Error adding todo: ", error);
-        } else {
-            setTodoList((prev) => [...prev, data]);
-            setNewTodo("");
-        }
-    };
-
-    const completeTask = async (id, isCompleted) => {
-        const { data, error } = await supabase
-            .from("TodoList")
-            .update({ isCompleted: !isCompleted })
-            .eq("id", id);
-
-        if (error) {
-            console.log("error toggling task: ", error);
-        } else {
-            const updatedTodoList = todoList.map((todo) =>
-                todo.id === id ? { ...todo, isCompleted: !isCompleted } : todo
-            );
-            setTodoList(updatedTodoList);
-        }
-    };
-
-    const deleteTask = async (id) => {
-        const { data, error } = await supabase
-            .from("TodoList")
-            .delete()
-            .eq("id", id);
-
-        if (error) {
-            console.log("error deleting task: ", error);
-        } else {
-            setTodoList((prev) => prev.filter((todo) => todo.id !== id));
-        }
-    };
-
 
     return (
         <>
