@@ -1,13 +1,12 @@
 'use client'
 
 import React, { use, useEffect, useState } from 'react';
-import { QrReader } from 'react-qr-reader';
 import BarcodeScannerComponent from "react-qr-barcode-scanner";
 import supabase from '../supabase-client';
 
 export default function AddStock() {
     const [data, setData] = useState([]);
-    const [barcode, setBarcode] = useState();
+    const [barcode, setBarcode] = useState('');
     const [btnScan, setBtnScan] = useState('N');
 
     function showAddStock() {
@@ -15,20 +14,19 @@ export default function AddStock() {
         document.getElementById('my_modal_5').showModal();
     }
 
-    // useEffect(() => { 
-    //      document.getElementById('search').value = 40903;
-    //      search();
-    //  }, []);    
+    useEffect(() => {
+        //search()
+    }, [barcode]);
 
     const search = async () => {
-        if (document.getElementById('search').value == '') {
+        if (barcode == '') {
             //alert("กรุณาระบุรหัสสินค้า");
             return;
         }
         let { data: stock, error } = await supabase
             .from('stock')
             .select("product_id,product_name,product_total")
-            .eq('product_id', document.getElementById('search').value)
+            .eq('product_id', barcode)
 
         if (error) {
             alert("Error fetching: " + error);
@@ -36,6 +34,24 @@ export default function AddStock() {
             setData(stock);
         }
     };
+
+    const searchBarcode = async (param) => {
+        if (param == '') {
+            //alert("กรุณาระบุรหัสสินค้า");
+            return;
+        }
+        let { data: stock, error } = await supabase
+            .from('stock')
+            .select("product_id,product_name,product_total")
+            .eq('product_id', param)
+
+        if (error) {
+            alert("Error fetching: " + error);
+        } else {
+            setData(stock);
+        }
+    };
+
     return (
         <>
             <div className="bg-base-200 min-h-screen">
@@ -57,51 +73,26 @@ export default function AddStock() {
                                 // width={500}
                                 // height={500}
                                 onUpdate={(err, result) => {
-                                    if (result) {
-                                        setBarcode( result?.text)
-                                        document.getElementById('search').value = result?.text;
-                                        search();
+                                    if (typeof result !== "undefined") {
+                                        setBarcode(result?.text)
+                                        searchBarcode(result?.text);
                                         setBtnScan('N')
                                     }
                                     else { setBarcode("no result") }
                                 }}
                             />
 
-                            <p >{barcode}</p>
                             <div className='pl-4 pr-4 pb-6'>
                                 <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('N')}>ปิด</button>
                             </div>
                         </>
-
-                        // <>
-                        //     <QrReader
-                        //         onResult={(result, error) => {
-                        //             if (!!result) {
-                        //                 //setData(result?.text);
-                        //                 document.getElementById('search').value = result?.text;
-                        //                 search();
-                        //                 setBtnScan('N')
-                        //             }
-
-                        //             if (!!error) {
-                        //                 console.info(error);
-                        //                 alert(error)
-                        //             }
-                        //         }}
-                        //         style={{ width: '100%' }}
-                        //     />
-                        //     <div className='pl-4 pr-4 pb-6'>
-                        //         <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('N')}>ปิด</button>
-                        //     </div>
-
-                        // </>
                         :
                         <>
                             <div className='pl-4 pr-4 pb-6'>
                                 <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('Y')}>Scan</button>
 
                                 <div className="join p-4 mt-6">
-                                    <input type="number" id="search" className="input input-bordered join-item" placeholder="รหัสสินค้า" />
+                                    <input type="number" id="search" className="input input-bordered join-item" placeholder="รหัสสินค้า" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
                                     <button className="btn join-item rounded-r-full btn-active btn-ghost" onClick={() => search()}>ค้นหา</button>
                                 </div>
                                 <p className='pb-4'>สินค้า : {data.length == 0 ? <></> : data[0].product_name}</p>
