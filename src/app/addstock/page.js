@@ -61,7 +61,7 @@ export default function AddStock() {
                                         search();
                                         setBtnScan('N')
                                     }
-                                    else { alert("no result") }
+                                    else { console.log("no result") }
                                 }}
                             />
                             <div className='pl-4 pr-4 pb-6'>
