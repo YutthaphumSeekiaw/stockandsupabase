@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import supabase from '../supabase-client';
 
 export default function DeleteStock() {
+    //ประกาศตัวแปร
     const [data, setData] = useState([]);
     const [userData, setUserData] = useState([]);
     const [barcode, setBarcode] = useState('');
@@ -11,62 +12,75 @@ export default function DeleteStock() {
     const [emp, setEmp] = useState('');
     const [total, setTotal] = useState(0);
 
+    //โหลดข้อมูลเมื่อเปิดหน้าเว็บครั้งแรก
     useEffect(() => {
+        //เช็คว่ามีข้อมูลใน localStorage หรือไม่ ถ้าไม่มีให้เปลี่ยนหน้าไปที่หน้า login
         if (!localStorage.getItem('userData')) {
             router.push('/')
         } else {
+            //ถ้ามีข้อมูลใน localStorage ให้เก็บข้อมูลในตัวแปร userData 
             setUserData(JSON.parse(localStorage.getItem('userData')));
         }
     }, []);
 
-    useEffect(() => {
-    }, [total]);
+    //เช็คว่ามีการเปลี่ยนแปลงข้อมูลหรือไม่ ในช่องกรอกข้อมูลรหัสสินค้า
     useEffect(() => {
     }, [barcode]);
+    //เช็คว่ามีการเปลี่ยนแปลงข้อมูลหรือไม่ ในช่องกรอกข้อมูลจำนวนสินค้า
+    useEffect(() => {
+    }, [total]);
+    //เช็คว่ามีการเปลี่ยนแปลงข้อมูลหรือไม่ ในช่องกรอกข้อมูลผู้เบิกสินค้า
     useEffect(() => {
     }, [emp]);
 
+    //function ค้นหาสินค้าจากฐานข้อมูล
     const search = async () => {
+        //ถ้าไม่กรอกรหัสสินค้า ให้ return ออกไป ไม่ทำอะไร
         if (barcode == '') {
-            //alert("กรุณาระบุรหัสสินค้า");
             return;
         }
-
+        //ดึงข้อมูลสินค้าจากฐานข้อมูล โดยเลือกเฉพาะ product_id,product_name,product_total จากตาราง stock ที่ product_id เท่ากับ รหัสสินค้าที่กรอกมา
         let { data: stock, error } = await supabase
             .from('stock')
             .select("product_id,product_name,product_total")
             .eq('product_id', document.getElementById('search').value)
-
+        //ถ้าเกิด error ให้แสดงข้อความ error
         if (error) {
             alert("Error fetching: " + error);
         } else {
+            //เก็บข้อมูลลงตัวแปร data
             setTotal(0);
             setData(stock);
         }
     };
 
+    //function ลบสินค้าจากฐานข้อมูล
     const delStock = async () => {
+        //เช็คว่าระบุรหัสสินค้าหรือไม่ ถ้าไม่ให้แสดง dialog แจ้งเตือน กรุณาระบุรหัสสินค้า
         if (data.length == 0) {
             setTextAlert("ไม่พบสินค้า กรุณาตรวจสอบรหัสสินค้าอีกครั้ง");
             document.getElementById('modalDelete').showModal();
             return
         }
+        //เช็คว่าระบุจำนวนสินค้าหรือไม่ ถ้าไม่ให้แสดง dialog แจ้งเตือน กรุณาระบุจำนวนเบิกสินค้า 
         if (total == 0) {
             setTextAlert("กรุณาระบุจำนวนเบิกสินค้า");
             document.getElementById('modalDelete').showModal();
             return
         }
-debugger
+        //เก็บข้อมูล stock ลงในฐานข้อมูล
         const { data: stock, error } = await supabase
             .from('stock')
             .update({ product_total: parseInt(data[0].product_total) - parseInt(total) })
             .eq('product_id', data[0].product_id)
             .select('product_id')
-
+        //เช็ค error ถ้าไม่มี error ให้ไปเก็บข้อมูล export ลงในฐานข้อมูลต่อ
         if (error) {
             alert("Error fetching: " + error);
         } else {
+            //เช็คว่าเก็บข้อมูล stock ลงในฐานข้อมูลสำเร็จหรือไม่
             if (stock.length > 0) {
+                //เก็บข้อมูล export สำเร็จหรือไม่
                 const { data: importData, error } = await supabase
                     .from('export')
                     .insert([
@@ -80,11 +94,13 @@ debugger
                         },
                     ])
                     .select('id')
-
+                //เช็ค error ถ้าไม่มี error ให้แสดง dialog แจ้งเตือน เบิกสินค้าเรียบร้อย
                 if (error) {
                     alert("Error fetching: " + error);
                 } else {
+                    //เช็คว่าเก็บข้อมูล export สำเร็จหรือไม่
                     if (importData.length > 0) {
+                        //เซตค่าเริ่มต้น เเละ แสดง dialog แจ้งเตือน เบิกสินค้าเรียบร้อย
                         setBarcode('');
                         setEmp('');
                         setData([]);
@@ -92,6 +108,7 @@ debugger
                         setTextAlert("เบิกสินค้าเรียบร้อย");
                         document.getElementById('modalDelete').showModal();
                     } else {
+                        //เซตค่าเริ่มต้น เเละ แสดง dialog แจ้งเตือน เบิกสินค้าไม่สำเร็จ
                         setBarcode('');
                         setEmp('');
                         setData([]);
@@ -102,6 +119,7 @@ debugger
                 }
 
             } else {
+                //เซตค่าเริ่มต้น เเละ แสดง dialog แจ้งเตือน เบิกสินค้าไม่สำเร็จ
                 setBarcode('');
                 setEmp('');
                 setData([]);
