@@ -8,10 +8,16 @@ export default function CheckStock() {
   const [text, setText] = useState([]);
 
   useEffect(() => {
-    fetchTodos();
+    if (!localStorage.getItem('userData')) {
+      router.push('/')
+    }
   }, []);
 
-  const fetchTodos = async () => {
+  useEffect(() => {
+    firstSearch();
+  }, []);
+
+  const firstSearch = async () => {
     let { data: stock, error } = await supabase
       .from('stock')
       .select("product_id,product_name,product_total")
@@ -46,12 +52,12 @@ export default function CheckStock() {
           <a className="btn btn-ghost text-xl">เช็ค Stock</a>
         </div>
         <div className="navbar-end">
-          <button className="btn btn-active btn-ghost" onClick={() => window.location.href = '/'}>กลับ</button>
+          <button className="btn btn-active btn-ghost" onClick={() => window.location.href = '/dashboard'}>กลับ</button>
         </div>
       </div>
 
       <div className="join p-4 mt-4">
-        <input type="number" id="search"  className="input input-bordered join-item" placeholder="รหัสสินค้า" />
+        <input type="number" id="search" className="input input-bordered join-item" placeholder="รหัสสินค้า" />
         <button className="btn join-item rounded-r-full btn-active btn-ghost" onClick={() => search()} >ค้นหา</button>
       </div>
       <div className="overflow-x-auto ">

@@ -8,15 +8,22 @@ export default function AddStock() {
     const [data, setData] = useState([]);
     const [barcode, setBarcode] = useState('');
     const [btnScan, setBtnScan] = useState('N');
-
-    function showAddStock() {
-        setBtnScan('N');
-        document.getElementById('my_modal_5').showModal();
-    }
+    const [userData, setUserData] = useState([]);
+    const [textAlert, setTextAlert] = useState('');
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
-        //search()
+        if (!localStorage.getItem('userData')) {
+            router.push('/')
+        } else {
+            setUserData(JSON.parse(localStorage.getItem('userData')));
+        }
+    }, []);
+
+    useEffect(() => {
     }, [barcode]);
+    useEffect(() => {
+    }, [total]);
 
     const search = async () => {
         if (barcode == '') {
@@ -31,6 +38,7 @@ export default function AddStock() {
         if (error) {
             alert("Error fetching: " + error);
         } else {
+            setTotal(0);
             setData(stock);
         }
     };
@@ -48,9 +56,74 @@ export default function AddStock() {
         if (error) {
             alert("Error fetching: " + error);
         } else {
+            setTotal(0);
             setData(stock);
         }
     };
+
+    const addStock = async () => {
+        if (data.length == 0) {
+            setTextAlert("ไม่พบสินค้า กรุณาตรวจสอบรหัสสินค้าอีกครั้ง");
+            document.getElementById('modalAddStock').showModal();
+            return
+        }
+        if (total == 0) {
+            setTextAlert("กรุณาระบุจำนวนสินค้า");
+            document.getElementById('modalAddStock').showModal();
+            return
+        }
+        
+        const { data: stock, error } = await supabase
+            .from('stock')
+            .update({ product_total: parseInt(data[0].product_total) + parseInt(total) })
+            .eq('product_id', data[0].product_id)
+            .select('product_id')
+
+        if (error) {
+            alert("Error fetching: " + error);
+        } else {
+            if (stock.length > 0) {
+                const { data: importData, error } = await supabase
+                    .from('import')
+                    .insert([
+                        {
+                            employee: userData?.name,
+                            product_name: data[0].product_name,
+                            stock: parseInt(data[0].product_total),
+                            import: parseInt(total),
+                            stock_renew: parseInt(data[0].product_total) + parseInt(total),
+                        },
+                    ])
+                    .select('id')
+
+                if (error) {
+                    alert("Error fetching: " + error);
+                } else {
+                    if (importData.length > 0) {
+                        setBarcode('');
+                        setData([]);
+                        setTotal(0);
+                        setTextAlert("เพิ่มสินค้าเรียบร้อย");
+                        document.getElementById('modalAddStock').showModal();
+                    } else {
+                        setBarcode('');
+                        setData([]);
+                        setTotal(0);
+                        setTextAlert("เพิ่มสินค้าไม่สำเร็จ");
+                        document.getElementById('modalAddStock').showModal();
+                    }
+                }
+
+            } else {
+                setBarcode('');
+                setData([]);
+                setTotal(0);
+                setTextAlert("เพิ่มสินค้าไม่สำเร็จ");
+                document.getElementById('modalAddStock').showModal();
+            }
+        }
+    };
+
 
     return (
         <>
@@ -62,7 +135,7 @@ export default function AddStock() {
                         <a className="btn btn-ghost text-xl">เพิ่มสินค้า</a>
                     </div>
                     <div className="navbar-end">
-                        <button className="btn btn-active btn-ghost" onClick={() => window.location.href = '/'}>กลับ</button>
+                        <button className="btn btn-active btn-ghost" onClick={() => window.location.href = '/dashboard'}>กลับ</button>
                     </div>
                 </div>
 
@@ -78,18 +151,18 @@ export default function AddStock() {
                                         searchBarcode(result?.text);
                                         setBtnScan('N')
                                     }
-                                    else { setBarcode("no result") }
+                                    else { console.log("cannot detect barcode or qr code") }
                                 }}
                             />
 
                             <div className='pl-4 pr-4 pb-6'>
-                                <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('N')}>ปิด</button>
+                                <button className="btn w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('N')}>ปิด</button>
                             </div>
                         </>
                         :
                         <>
                             <div className='pl-4 pr-4 pb-6'>
-                                <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('Y')}>Scan</button>
+                                <button className="btn w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('Y')}>Scan</button>
 
                                 <div className="join p-4 mt-6">
                                     <input type="number" id="search" className="input input-bordered join-item" placeholder="รหัสสินค้า" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
@@ -98,20 +171,20 @@ export default function AddStock() {
                                 <p className='pb-4'>สินค้า : {data.length == 0 ? <></> : data[0].product_name}</p>
                                 <p className='pb-4'>สินค้าคงคลัง : {data.length == 0 ? <></> : data[0].product_total}</p>
                                 <div>
-                                    <span><h1>เพิ่ม stock จำนวน :</h1></span><input type="number" placeholder="ระบุ" className="input input-bordered w-full max-w-xs" />
+                                    <span><h1>เพิ่ม stock จำนวน :</h1></span><input type="number" placeholder="ระบุ" className="input input-bordered w-full max-w-xs" value={total} onChange={(e) => setTotal(e.target.value)} />
                                 </div>
 
-                                <p className='pb-4 pt-4'>โดยพนักงาน : user1</p>
-                                <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg w-full p-6  btn-active btn-ghost" onClick={() => showAddStock()}>เพิ่มสินค้า</button>
+                                <p className='pb-4 pt-4'>โดยพนักงาน : {userData?.name}</p>
+                                <button className="btn w-full p-6  btn-active btn-ghost" onClick={() => addStock()}>เพิ่มสินค้า</button>
                             </div>
                         </>
 
                 }
 
 
-                <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
+                <dialog id="modalAddStock" className="modal modal-bottom sm:modal-middle">
                     <div className="modal-box">
-                        <h1 className="py-4">เพิ่มสินค้าเรียบร้อย</h1>
+                        <h1 className="py-4">{textAlert}</h1>
                         <div className="modal-action">
                             <form method="dialog">
                                 {/* if there is a button in form, it will close the modal */}
