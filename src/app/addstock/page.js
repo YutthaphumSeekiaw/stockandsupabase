@@ -6,7 +6,8 @@ import BarcodeScannerComponent from "react-qr-barcode-scanner";
 import supabase from '../supabase-client';
 
 export default function AddStock() {
-    const [data, setData] = useState('');
+    const [data, setData] = useState([]);
+    const [barcode, setBarcode] = useState();
     const [btnScan, setBtnScan] = useState('N');
 
     function showAddStock() {
@@ -53,17 +54,20 @@ export default function AddStock() {
                     btnScan == 'Y' ?
                         <>
                             <BarcodeScannerComponent
-                                width={500}
-                                height={500}
+                                // width={500}
+                                // height={500}
                                 onUpdate={(err, result) => {
                                     if (result) {
+                                        setBarcode( result?.text)
                                         document.getElementById('search').value = result?.text;
                                         search();
                                         setBtnScan('N')
                                     }
-                                    else { console.log("no result") }
+                                    else { setBarcode("no result") }
                                 }}
                             />
+
+                            <p >{barcode}</p>
                             <div className='pl-4 pr-4 pb-6'>
                                 <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('N')}>ปิด</button>
                             </div>
