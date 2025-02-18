@@ -1,0 +1,24 @@
+{
+  "name": "stockandsupabase",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "@tailwindcss/postcss": "^4.0.6",
+    "next": "15.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-qr-reader": "^3.0.0-beta-1"
+  },
+  "devDependencies": {
+    "daisyui": "^4.12.23",
+    "postcss": "^8.5.2",
+    "tailwindcss": "^3.4.17"
+  }
+}
