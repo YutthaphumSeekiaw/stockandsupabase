@@ -146,7 +146,7 @@ debugger
                     </div>
                     <p className='pb-4 pt-4'>โดยพนักงาน : {userData?.name}</p>
 
-                    <button className="btn btn-active btn-ghost sm:btn-sm md:btn-md lg:btn-lg w-full p-6 " onClick={() => delStock()}>เบิกสินค้า</button>
+                    <button className="btn btn-active btn-ghost w-full" onClick={() => delStock()}>เบิกสินค้า</button>
                 </div>
 
             </div>
