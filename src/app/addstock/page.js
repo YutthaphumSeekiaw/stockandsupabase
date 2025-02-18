@@ -56,7 +56,7 @@ export default function AddStock() {
                                 onResult={(result, error) => {
                                     if (!!result) {
                                         //setData(result?.text);
-                                        document.getElementById('search').value = 40903//result?.text;
+                                        document.getElementById('search').value = result?.text;
                                         search();
                                         setBtnScan('N')
                                     }
