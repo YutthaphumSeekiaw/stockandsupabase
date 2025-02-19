@@ -183,23 +183,25 @@ export default function AddStock() {
                         </>
                         :
                         <>
-                            <div className='pl-4 pr-4 pb-6'>
-                                <button className="btn w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('Y')}>Scan</button>
-                                {/* //input รหัสสินค้า ปุ่มค้นหา */}
-                                <div className="join p-4 mt-6">
-                                    <input type="number" id="search" className="input input-bordered join-item" placeholder="รหัสสินค้า" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
-                                    <button className="btn join-item rounded-r-full btn-active btn-ghost" onClick={() => search()}>ค้นหา</button>
+                            <div className='flex flex-col items-center justify-center'>
+                                <div className='pl-4 pr-4 pb-6'>
+                                    <button className="btn w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('Y')}>Scan</button>
+                                    {/* //input รหัสสินค้า ปุ่มค้นหา */}
+                                    <div className="join p-4 mt-6">
+                                        <input type="number" id="search" className="input input-bordered join-item" placeholder="รหัสสินค้า" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
+                                        <button className="btn join-item rounded-r-full btn-active btn-ghost" onClick={() => search()}>ค้นหา</button>
+                                    </div>
+                                    <p className='pb-4'>สินค้า : {data.length == 0 ? <></> : data[0].product_name}</p>
+                                    <p className='pb-4'>สินค้าคงคลัง : {data.length == 0 ? <></> : data[0].product_total}</p>
+                                    {/* //จำนวนสินค้าที่ต้องการเพิ่ม */}
+                                    <div>
+                                        <span><h1>เพิ่ม stock จำนวน :</h1></span><input type="number" placeholder="ระบุ" className="input input-bordered w-full max-w-xs" value={total} onChange={(e) => setTotal(e.target.value)} />
+                                    </div>
+                                    {/* //แสดงชื่อพนักงาน */}
+                                    <p className='pb-4 pt-4'>โดยพนักงาน : {userData?.name}</p>
+                                    {/* //ปุ่มเพิ่มสินค้า */}
+                                    <button className="btn w-full p-6  btn-active btn-ghost" onClick={() => addStock()}>เพิ่มสินค้า</button>
                                 </div>
-                                <p className='pb-4'>สินค้า : {data.length == 0 ? <></> : data[0].product_name}</p>
-                                <p className='pb-4'>สินค้าคงคลัง : {data.length == 0 ? <></> : data[0].product_total}</p>
-                                {/* //จำนวนสินค้าที่ต้องการเพิ่ม */}
-                                <div>
-                                    <span><h1>เพิ่ม stock จำนวน :</h1></span><input type="number" placeholder="ระบุ" className="input input-bordered w-full max-w-xs" value={total} onChange={(e) => setTotal(e.target.value)} />
-                                </div>
-                                {/* //แสดงชื่อพนักงาน */}
-                                <p className='pb-4 pt-4'>โดยพนักงาน : {userData?.name}</p>
-                                {/* //ปุ่มเพิ่มสินค้า */}
-                                <button className="btn w-full p-6  btn-active btn-ghost" onClick={() => addStock()}>เพิ่มสินค้า</button>
                             </div>
                         </>
 

@@ -1,10 +1,12 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
+import BarcodeScannerComponent from "react-qr-barcode-scanner";
 import supabase from '../supabase-client';
 
 export default function DeleteStock() {
     //ประกาศตัวแปร
+    const [btnScan, setBtnScan] = useState('N');
     const [data, setData] = useState([]);
     const [userData, setUserData] = useState([]);
     const [barcode, setBarcode] = useState('');
@@ -49,6 +51,27 @@ export default function DeleteStock() {
             alert("Error fetching: " + error);
         } else {
             //เก็บข้อมูลลงตัวแปร data
+            setTotal(0);
+            setData(stock);
+        }
+    };
+
+    //function ค้นหาสินค้าจากฐานข้อมูล จากการสแกน
+    const searchBarcode = async (param) => {
+        //เช็คว่ารหัสสินค้าว่างหรือไม่ ถ้าว่างให้ return ออกไป ไม่ทำอะไร
+        if (param == '') {
+            return;
+        }
+        //ดึงข้อมูลสินค้าจากฐานข้อมูล โดยเลือกเฉพาะ product_id,product_name,product_total จากตาราง stock ที่ product_id เท่ากับ param
+        let { data: stock, error } = await supabase
+            .from('stock')
+            .select("product_id,product_name,product_total")
+            .eq('product_id', param)
+        //เช็ค error ถ้าไม่มี error ให้เซ็ตค่าเริ่มต้น และเก็บข้อมูลลงในตัวแปร data
+        if (error) {
+            alert("Error fetching: " + error);
+        } else {
+            //เซ็ตค่าลงในตัวแปร data
             setTotal(0);
             setData(stock);
         }
@@ -153,27 +176,55 @@ export default function DeleteStock() {
                     </div>
                 </div>
 
-                <div className='pl-4 pr-4 pb-6'>
+                {
+                    //เช็คกดปุ่ม scan หรือไม่
+                    btnScan == 'Y' ?
+                        <>
+                            {/* //เปิดกล้องสแกน */}
+                            <BarcodeScannerComponent
+                                onUpdate={(err, result) => {
+                                    if (typeof result !== "undefined") {
+                                        setBarcode(result?.text)
+                                        searchBarcode(result?.text);
+                                        setBtnScan('N')
+                                    }
+                                    else { console.log("cannot detect barcode or qr code") }
+                                }}
+                            />
+                            {/* //ปุ่มปิด หน้า scan */}
+                            <div className='pl-4 pr-4 pb-6'>
+                                <button className="btn w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('N')}>ปิด</button>
+                            </div>
+                        </>
+                        :
+                        <>
+                            <div className='flex flex-col items-center justify-center'>
+                                <div className='pl-4 pr-4 pb-6'>
+                                    <button className="btn w-full mt-2 p-6 btn-active btn-ghost" onClick={() => setBtnScan('Y')}>Scan</button>
+                                    <div className="join p-4">
+                                        <input type="number" id="search" className="input input-bordered join-item" placeholder="รหัสสินค้า" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
+                                        <button className="btn join-item rounded-r-full btn-active btn-ghost" onClick={() => search()}>ค้นหา</button>
+                                    </div>
+                                    <p className='pb-4'>สินค้า : {data.length == 0 ? <></> : data[0].product_name}</p>
+                                    <p className='pb-4'>สินค้าคงคลัง : {data.length == 0 ? <></> : data[0].product_total}</p>
+                                    <div>
+                                        <span><h1>เบิกจำนวน :</h1></span><input type="number" placeholder="ระบุ" className="input input-bordered w-full max-w-xs" value={total} onChange={(e) => setTotal(e.target.value)} />
+                                    </div>
 
-                    <div className="join p-4">
-                        <input type="number" id="search" className="input input-bordered join-item" placeholder="รหัสสินค้า" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
-                        <button className="btn join-item rounded-r-full btn-active btn-ghost" onClick={() => search()}>ค้นหา</button>
-                    </div>
-                    <p className='pb-4'>สินค้า : {data.length == 0 ? <></> : data[0].product_name}</p>
-                    <p className='pb-4'>สินค้าคงคลัง : {data.length == 0 ? <></> : data[0].product_total}</p>
-                    <div>
-                        <span><h1>เบิกจำนวน :</h1></span><input type="number" placeholder="ระบุ" className="input input-bordered w-full max-w-xs" value={total} onChange={(e) => setTotal(e.target.value)} />
-                    </div>
+                                    <div className="mt-6">
+                                        <span><h1>ผู้เบิกสินค้า :</h1></span><input type="text" placeholder="ระบุ" className="input input-bordered w-full max-w-xs" value={emp} onChange={(e) => setEmp(e.target.value)} />
+                                    </div>
+                                    <p className='pb-4 pt-4'>โดยพนักงาน : {userData?.name}</p>
+                                    {/* //ปุ่มเบิกสินค้า */}
+                                    <button className="btn btn-active btn-ghost w-full" onClick={() => delStock()}>เบิกสินค้า</button>
+                                </div>
+                            </div>
+                        </>
 
-                    <div className="mt-6">
-                        <span><h1>ผู้เบิกสินค้า :</h1></span><input type="text" placeholder="ระบุ" className="input input-bordered w-full max-w-xs" value={emp} onChange={(e) => setEmp(e.target.value)} />
-                    </div>
-                    <p className='pb-4 pt-4'>โดยพนักงาน : {userData?.name}</p>
-
-                    <button className="btn btn-active btn-ghost w-full" onClick={() => delStock()}>เบิกสินค้า</button>
-                </div>
+                }
 
             </div>
+            {/* //dialog แจ้งเตือน */}
             <dialog id="modalDelete" className="modal modal-bottom sm:modal-middle">
                 <div className="modal-box">
                     <h1 className="py-4">{textAlert}</h1>
