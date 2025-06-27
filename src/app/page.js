@@ -41,6 +41,7 @@ export default function Home() {
       }
     }
   };
+  
 
   //ส่วนของหน้าเว็บ
   return (
