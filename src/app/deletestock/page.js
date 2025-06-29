@@ -224,6 +224,11 @@ export default function DeleteStock() {
                 }
 
             </div>
+
+
+
+
+            
             {/* //dialog แจ้งเตือน */}
             <dialog id="modalDelete" className="modal modal-bottom sm:modal-middle">
                 <div className="modal-box">
